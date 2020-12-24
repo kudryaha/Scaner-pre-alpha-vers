@@ -1,6 +1,7 @@
 import socket
 from datetime import datetime
 import time
+import smtplib
 
 t1 = time.strftime("%Y.%m.%d-%H;%M;%S")
  
@@ -45,5 +46,10 @@ if __name__ == '__main__':
     with open('names.txt', 'a') as f3:
         f3.write(t1 + '\n')
    
-
+with open('res.txt', 'r') as textOfEmail:
+    email = textOfEmail
+    message = smtplib.SMTP('smtp.gmail.com', 587)
+    message.starttls()
+    message.login('yapishukursach@gmail.com','Python420420')
+    message.sendmail("yapishukursach@gmail.com","yapishukursach@gmail.comч","")
 
