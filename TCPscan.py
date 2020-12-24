@@ -1,44 +1,49 @@
-import os
 import socket
 from datetime import datetime
 import time
-startTime = time.time()
 
+t1 = time.strftime("%Y.%m.%d-%H;%M;%S")
+ 
+def diff():
+    global t1
+    with open('names.txt') as names:
+        with open(names.readlines()[-1].strip() + '.txt') as text_one, \
+                open(t1 + '.txt') as text_two:
+            dif = set(text_one) ^ set(text_two)
+            dif = list(dif)
+            dif.sort()
+            print(dif)
+            return dif
 
-with open("hosts.txt") as f:
-    hosts_count = 0
-    for line in f:
-        hosts_count += 1
-
-
-t1 = datetime.now()
-
-def scan(addr):
-    i = 0
-    s = socket.socket(socket.AF_INET, socket.SOCK_STREAM) #communication domain - AF_INET (Internet протоколы).type of the socket - SOCK_STREAM; Этот тип обеспечивает последовательный, надежный, ориентированный на установление двусторонней связи поток байт
+def scan(ip_, port_):
+    s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    #communication domain - AF_INET (Internet протоколы).
+    #type of the socket - SOCK_STREAM; Этот тип обеспечивает последовательный, надежный, ориентированный на установление двусторонней связи поток байт
     socket.setdefaulttimeout(1)
-    conn = s.connect_ex(addr) #https://www.sololearn.com/Discuss/808820/what-is-the-difference-between-connect-and-connect_ex-in-python-socket
+    conn = s.connect_ex((ip_, port_))
     if conn == 0:
-        i += 1
-        print('Port %d: OPEN' % (i,))
         return 1
     else:
         return 0
-    s.close()
+    
+with open(t1+'.txt', 'w') as f1:
+    with open('hosts.txt') as f2:
+        for line in f2:
+            ip = line.split()[0]
+            port = int(line.split()[1])
+            scan(ip, port)
+            if (scan(ip, port)):
+                f1.write(f"Порт {ip}:{port} открыт\n")
+            else:
+                f1.write(f"Порт {ip}:{port} закрыт\n")
 
-def run1():
-   for ip in range(0,hosts_count):
-       with open("hosts.txt") as file_handler:
-           for line in file_handler:
-               addr = line
-      if (scan(addr)):
-          results = open('RESULTS.txt', 'a+')
-          text_for_file =(' port %d: OPEN' %(addr,))
-          results.write(text_for_file)
-          results.close()
-   date = time.time()
-   os.rename('RESULTS.txt', '%d.txt'%(date))
-
-
+ 
+if __name__ == '__main__':
+    with open('res.txt', 'w') as result:
+        for i in diff():
+            result.write(i)
+    with open('names.txt', 'a') as f3:
+        f3.write(t1 + '\n')
+   
 
 
