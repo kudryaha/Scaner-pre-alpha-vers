@@ -41,8 +41,6 @@ def diff():
  
 def scan(ip_, port_):
     s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    #communication domain - AF_INET (Internet протоколы).
-    #type of the socket - SOCK_STREAM; Этот тип обеспечивает последовательный, надежный, ориентированный на установление двусторонней связи поток байт
     socket.setdefaulttimeout(1)
     conn = s.connect_ex((ip_, port_))
     if conn == 0:
