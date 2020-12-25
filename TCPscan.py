@@ -1,44 +1,72 @@
-import os
 import socket
 from datetime import datetime
 import time
-startTime = time.time()
+import smtplib
+from email.mime.multipart import MIMEMultipart
+from email.mime.text import MIMEText
 
+t1 = time.strftime("%Y.%m.%d-%H;%M;%S")
+errors = False
 
-with open("hosts.txt") as f:
-    hosts_count = 0
-    for line in f:
-        hosts_count += 1
+def send_message():
+    with open('res.txt', 'r') as f:
+        filename = "res.txt"      
+        attachment = MIMEText(f.read())
+        attachment.add_header('Content-Disposition', 'attachment', filename=filename)
+        msg = MIMEMultipart('alternative')
+        s = smtplib.SMTP('smtp.gmail.com', 587)
+        s.starttls()
+        s.login('yapishukursach@gmail.com', 'Python420420')
+        toEmail, fromEmail = 'yapishukursach@gmail.com', 'yapishukursach@gmail.com'
+        msg['Subject'] = 'subject'
+        msg['From'] = fromEmail
+        body = 'WARNING'
+        content = MIMEText(body, 'plain')
+        msg.attach(content)
+        msg.attach(attachment)
+        s.sendmail(fromEmail, toEmail, msg.as_string())
 
+def diff():
+    global t1
+    global errors
+    with open('names.txt') as names:
+        with open(names.readlines()[-1].strip() + '.txt') as text_one, open(t1 + '.txt') as text_two:
+            dif = []
+            lines = set(text_two.readlines())
+            for line in text_one:
+                if line not in lines:
+                    errors = True
+                    dif += line
+            return dif
 
-t1 = datetime.now()
-
-def scan(addr):
-    i = 0
-    s = socket.socket(socket.AF_INET, socket.SOCK_STREAM) #communication domain - AF_INET (Internet протоколы).type of the socket - SOCK_STREAM; Этот тип обеспечивает последовательный, надежный, ориентированный на установление двусторонней связи поток байт
+def scan(ip_, port_):
+    s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    #communication domain - AF_INET (Internet протоколы).
+    #type of the socket - SOCK_STREAM; Этот тип обеспечивает последовательный, надежный, ориентированный на установление двусторонней связи поток байт
     socket.setdefaulttimeout(1)
-    conn = s.connect_ex(addr) #https://www.sololearn.com/Discuss/808820/what-is-the-difference-between-connect-and-connect_ex-in-python-socket
+    conn = s.connect_ex((ip_, port_))
     if conn == 0:
-        i += 1
-        print('Port %d: OPEN' % (i,))
         return 1
     else:
         return 0
-    s.close()
 
-def run1():
-   for ip in range(0,hosts_count):
-       with open("hosts.txt") as file_handler:
-           for line in file_handler:
-               addr = line
-      if (scan(addr)):
-          results = open('RESULTS.txt', 'a+')
-          text_for_file =(' port %d: OPEN' %(addr,))
-          results.write(text_for_file)
-          results.close()
-   date = time.time()
-   os.rename('RESULTS.txt', '%d.txt'%(date))
+with open(t1+'.txt', 'w') as f1:
+    with open('hosts.txt') as f2:
+        for line in f2:
+            ip = line.split()[0]
+            port = int(line.split()[1])
+            scan(ip, port)
+            if (scan(ip, port)):
+                f1.write(f"Port {ip}:{port} open\n")
+            else:
+                f1.write(f"Port {ip}:{port} closed\n")
 
 
-ыыыыыыыыы
-
+if __name__ == '__main__':
+    with open('res.txt', 'w') as result:
+        for i in diff():
+            result.write(i)          
+    with open('names.txt', 'a') as f3:
+        f3.write(t1 + '\n')
+    if errors:
+        send_message()
